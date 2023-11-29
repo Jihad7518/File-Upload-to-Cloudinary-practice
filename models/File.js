@@ -1,3 +1,5 @@
+
+
 const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 
@@ -16,6 +18,7 @@ const fileSchema = new mongoose.Schema({
         type: String,
     }
 });
+
 
 //post middleware
 fileSchema.post("save", async function(doc) {
@@ -47,3 +50,7 @@ fileSchema.post("save", async function(doc) {
         
     }
 })
+
+
+const File = mongoose.model("File", fileSchema);
+module.exports = File;
