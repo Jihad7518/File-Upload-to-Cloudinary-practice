@@ -33,7 +33,6 @@ exports.localFileUpload = async (req,res) => {
     }
 }
 
-
 //file type support function
 function isFileTypeSupported(type, supportedTypes){
     return supportedTypes.includes(type);
@@ -155,4 +154,54 @@ exports.videoUpload = async (req,res) => {
     }
 }
 
+//image size reducer
+exports.imageSizeReducer = async(req,res) => {
+    try {
+        //fetch data
+        const {name, email, tags} = req.body;
+        console.log(name, email, tags);
+
+        const file = req.files.reduceImgUploadCloud;
+        console.log("File : ", file);
+
+        // validation
+        const supportedTypes = ["jpg", "jpeg", "png"];
+        const fileType = file.name.split('.')[1].toLowerCase();
+        console.log("File type : ", fileType);
+
+        // if file formate is not support
+        if(!isFileTypeSupported(fileType, supportedTypes)){
+            return res.status(400).json({
+                success: false,
+                message: "Sorry!!! File FOrmate is not supported!!",
+            });
+        }
+
+        // if file formate supported then
+        const response = await fileUploadToCloudinary(file, "FileUploadProject", 40);
+        console.log(response);
+
+        // sent entry to database
+        const fileData = await File.create({
+            name,
+            email,
+            tags,
+            imageUrl: response.secure_url,
+        });
+
+        // sent successfull response
+        res.json({
+            success: true,
+            message: "Image succesfully uploaded with reduced size.",
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            imageUrl: response.secure_url,
+            message: "Something went wrong",
+        });
+    }
+}
 
