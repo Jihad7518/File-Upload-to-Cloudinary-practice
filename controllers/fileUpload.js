@@ -102,3 +102,57 @@ exports.imageUpload = async (req,res) => {
 }
 
 
+// video upload handler
+exports.videoUpload = async (req,res) => {
+    try {
+        //fetch data
+        const {name, tags, email} = req.body;
+        console.log(name, tags, email);
+
+        const file = req.files.videoUploadCloud;
+        console.log("File : ", file);
+
+        //validation
+        const supportedTypes = ["mp4", "mpv"];
+        const fileType = file.name.split('.')[1].toLowerCase();
+        console.log("File type is : ", fileType);
+
+        // if file formate not supports then
+        if(!isFileTypeSupported(fileType, supportedTypes)) {
+            return res.status(400).json({
+                success: false,
+                message: "Sorryyyy!! File type is not supported!!",
+            });
+        }
+
+        // if file type is supported then upload the file 
+        console.log("File Uploading to Cloudinary");
+        const response = await fileUploadToCloudinary(file, "FileUploadProject");
+        console.log(response);
+
+        // sent entry to the database
+        const fileData = await File.create({
+            name,
+            email,
+            tags,
+            imageUrl: response.secure_url,
+        });
+
+        // sent success response
+        res.json({
+            success: true,
+            imageUrl: response.secure_url,
+            message: "Video File Uploaded Successfully!!",
+        });
+
+
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: "Somethign went wrong while video ulpoading to cloudinary!!",
+        });
+    }
+}
+
+
